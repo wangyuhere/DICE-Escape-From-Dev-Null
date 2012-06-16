@@ -1,0 +1,180 @@
+<html>
+	<head>
+		<title>Task 1</title>
+		<script type="text/javascript" src="jquery.min.js"></script>
+		<script type="text/javascript">
+		window.requestAnimFrame = window.requestAnimationFrame ||
+			window.webkitRequestAnimationFrame ||
+			window.mozRequestAnimationFrame ||
+			window.oRequestAnimationFrame ||
+			window.msRequestAnimationFrame ||
+			function(callback) {
+				window.setTimeout(callback, 1000 / FPS);
+			};
+
+		$(function() {
+
+			var canvas = $('#game')[0]
+			  , ctx = canvas.getContext('2d')
+			  , g_width = ctx.canvas.width
+			  , g_height = ctx.canvas.height
+			  , leftKeyDown = false
+			  , rightKeyDown = false;
+
+			$(canvas).css({'backgroundColor': '#222'});
+
+			$('body').bind('keydown', function(e) {
+				if (e.keyCode === 37) { // left
+					leftKeyDown = true
+				}
+				else if (e.keyCode === 39) { // right
+					rightKeyDown = true
+				}
+			});
+			$('body').bind('keyup', function(e) {
+				if (e.keyCode === 37) {
+					leftKeyDown = false
+				}
+				else if (e.keyCode === 39) {
+					rightKeyDown = false;
+				}
+			});
+			$('body').bind('keypress', function(e) {
+				if (e.keyCode === 32) {
+					shoot();
+				}
+			});
+
+			var bullets = [];
+
+			// bullet
+			function Bullet(x, y) {
+				this.x = x;
+				this.y = y;
+				this.w = 4;
+				this.h = 4;
+				this.speed = 2;
+				this.alive = true;
+			}
+			Bullet.prototype.update = function() {
+				this.y -= this.speed;
+				if (this.y + this.radius * 2 < 0) {
+					this.alive = false;
+				}
+			};
+			Bullet.prototype.draw = function() {
+				//ctx.beginPath();
+				ctx.fillStyle = 'yellow';
+				ctx.fillRect(this.x, this.y, this.w, this.h);
+				//ctx.arc(this.x, this.y, this.radius * 2, 0, Math.PI * 2, true);
+				//ctx.fill();
+				//ctx.closePath();
+			};
+
+			// player
+			function Player(x, y) {
+			    this.x = x;
+			    this.y = y;
+			    this.w = 100;
+			    this.h = 10;
+			    this.speed = 2;
+			}
+			Player.prototype.update = function() {
+				if (leftKeyDown) {
+					this.x -= this.speed;
+				}
+				else if (rightKeyDown) {
+					this.x += this.speed;
+				}
+			    if (this.x <= 0) {
+			        this.x = 0;
+			    }
+			    if (this.x >= g_width - this.w) {
+			        this.x = g_width - this.w;
+			    }
+			}
+			Player.prototype.draw = function() {
+			    ctx.fillStyle = '#ff0000';
+			    ctx.fillRect(this.x, this.y, this.w, this.h);
+			}
+
+			// enemy
+			function Enemy(x, y) {
+			    this.x = x;
+			    this.y = y;
+			    this.w = 50;
+			    this.h = 50;
+			    this.speed = 2;
+			 	this.alive = true;
+			}
+			Enemy.prototype.update = function() {
+			    this.x += this.speed;
+			    if (this.x <= 0) {
+			        this.x = 0;
+			        this.speed = 2;
+			    }
+			    if (this.x >= g_width - this.w) {
+			        this.x = g_width - this.w;
+			        this.speed = -2;
+			    }
+			}
+			Enemy.prototype.draw = function() {
+			    ctx.fillStyle = '#0000ff';
+			    ctx.fillRect(this.x, this.y, this.w, this.h);
+			}
+
+			var player = new Player(g_width / 2 - 50, g_height - 20)
+			  , enemy = new Enemy(g_width / 2, g_height / 2);
+
+			function shoot() {
+				var x = player.x + player.w / 2 - 4
+				  , y = player.y - 10;
+				bullets.push(new Bullet(x, y));
+			}
+
+			function intersectsWith(b, e) {
+				return b.x > e.x && b.x < e.x+e.w && b.y > e.y && b.y < e.y+e.h;
+			}
+
+			requestAnimFrame(tick);
+
+			function tick() {
+				if ( ! enemy.alive) {
+					ctx.fillStyle = 'lightgreen';
+					ctx.font = '20px Monospace';
+					ctx.fillText("You won!!!", 100, 100);
+					return;
+				}
+
+				requestAnimFrame(tick);
+				ctx.clearRect(0, 0, g_width, g_height);
+
+				// update and draw player
+				player.update();
+				player.draw();
+
+				// update and draw enemy
+				enemy.update();
+				enemy.draw();
+
+				// update and draw bullets
+				for (var i = 0; i < bullets.length; i++) {
+					var bullet = bullets[i];
+					if (bullet.alive) {
+						bullet.update();
+						bullet.draw();
+						if (intersectsWith(bullet, enemy)) {
+							bullet.alive = false;
+							enemy.alive =false;
+						}
+					}
+				}
+			}
+
+		});
+		</script>
+	</head>
+	<body>
+		<canvas id="game" width="800" height="600"></canvas>
+	</body>
+</html>
