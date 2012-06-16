@@ -1,0 +1,128 @@
+<html>
+	<head>
+		<title>Task 3</title>
+		<style type="text/css">
+		body { text-align: center; }
+		#game { background-color: #222; }
+		</style>
+		<script type="text/javascript" src="jquery.min.js"></script>
+		<script type="text/javascript">
+		$(function() {
+
+			var canvas = $('#game')[0]
+			  , ctx = canvas.getContext('2d')
+			  , g_width = ctx.canvas.width
+			  , g_height = ctx.canvas.height;
+
+			var GRID_ROWS = 24
+			  , GRID_COLUMNS = 16
+			  , S_ON = 1
+			  , S_OFF = 0;
+
+			var currentShape = null
+			  , ticker = null;
+
+			// bind left and right keys
+			$('body').bind('keyup', function(e) {
+				if (e.keyCode === 37) {
+					currentShape.rotateLeft();
+				} else if (e.keyCode === 39) {
+					currentShape.rotateRight();
+				}
+			});
+
+			function Block(i, j) {
+			    this.i = i;
+			    this.j = j;
+			    this.w = 25;
+			    this.h = 25;
+			    this.x = this.w * this.j;
+			    this.y = this.w * this.i;
+			    this.s = S_OFF;
+			}
+
+			Block.prototype.update = function () {
+			}
+
+			Block.prototype.draw = function () {
+			    switch(this.s) {
+			        case S_ON:
+			            ctx.fillStyle = '#ff0000';
+			            ctx.fillRect(this.x, this.y, this.w, this.h);
+			            break;
+			        case S_OFF:
+			            break;
+			    }
+			}
+
+			function getBelow(b) {
+			    if (b.i + 1 > GRID_ROWS) {
+			        return null;
+			    }
+			    return map[b.i+1][b.j];
+			}
+
+			function S1(b1, b2) {
+			    this.b1 = b1;
+			    this.b2 = b2;
+			 	this.b1.s = S_ON;
+			 	this.b2.s = S_ON;
+			}
+
+			S1.prototype.update = function () {
+				var b1 = this.b1;
+				var b2 = this.b2;
+			    var s1 = getBelow(b1);
+			    var s2 = getBelow(b2);
+
+			    if (s1 == null || s2 == null) {
+			        return;
+			    }
+
+			    if (s1 != b2) {
+			        if (s1.s == S_ON || s2.s == S_ON) return;
+			    } else {
+			        if (s2.s == S_ON) return;
+			    }
+
+			    b1.s = S_OFF;
+			    b2.s = S_OFF;
+
+			    b1 = s1;
+			    b2 = s2;
+
+			    b1.s = S_ON;
+			    b2.s = S_ON;
+			}
+
+			// create block grid
+			var map = new Array(GRID_ROWS);
+			for (var i = 0; i < map.length; i++) {
+				map[i] = new Array(GRID_COLUMNS);
+				for (var j = 0; j < map[i].length; j++) {
+					map[i][j] = new Block(i, j);
+				}
+			}
+
+			var shape1 = new S1(map[4][4],map[4][5]);
+
+			tick();
+
+			function tick() {
+				ctx.clearRect(0, 0, g_width, g_height);
+				shape1.update();
+				for (var i = 0; i < map.length; i++) {
+					for (var j = 0; j < map[i].length; j++) {
+						map[i][j].draw();
+					}
+				}
+				ticker = setTimeout(tick, 50);
+			}
+
+		});
+		</script>
+	</head>
+	<body>
+		<canvas id="game" width="400" height="600"></canvas>
+	</body>
+</html>
