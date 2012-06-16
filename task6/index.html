@@ -28,7 +28,7 @@
 				, g_height = ctx.canvas.height;
 
 			var SEGMENT_WIDTH = 160
-			  , GRAVITY = 3;
+			  , GRAVITY = 0.5;
 
 			var segments = []
 			  , colors = ['#3cb93f','#d92d1b','#277fd0']
@@ -43,10 +43,10 @@
 			// bind left and right keys
 			$('body').bind('keydown', function(e) {
 				var key = e.keyCode;
-				if (key === 37) { // left
+				if (key === 39) { // left
 					rightKeyDown = false;
 					leftKeyDown = true;
-				} else if (key === 39) { // right
+				} else if (key === 37) { // right
 					leftKeyDown = false;
 					rightKeyDown = true;
 				}
@@ -54,11 +54,11 @@
 			});
 			$('body').bind('keyup', function(e) {
 				var key = e.keyCode;
-				if (key === 37) { // left
+				if (key === 39) { // left
 					leftKeyDown = false;
-				} else if (key === 39) { // right
+				} else if (key === 37) { // right
 					rightKeyDown = false;
-				} else if (key === 38) {
+				} else if (key === 32) {
 					player.jump();
 				}
 			});
@@ -69,16 +69,50 @@
 				this.w = w;
 				this.h = h;
 				this.vy = 0;
+				this.jumping = false;
+				this.dropping = false;
 			}
 			Player.prototype.update = function() {
-				
+				this.y += this.vy;
+				if (this.jumping || this.dropping) {
+					this.vy += GRAVITY;
+				}
+
+				for (var i = 0; i < map.length; i++) {
+
+
+					if (this.x < map[i].x || this.x > map[i].x + map[i].w) {
+						continue;
+					}
+
+					if (this.y >= map[i].y - this.h) {
+						this.y = map[i].y - this.h;
+						this.jumping = this.dropping = false;
+						this.vy = 0;
+					} else {
+						this.dropping = true;
+					}
+					if (map[i].platform) {
+						if (this.y >= map[i].p.y - this.h && this.y + this.h <= map[i].p.y) {
+							this.y = map[i].p.y - this.h;
+							this.jumping = this.dropping = false;
+							this.vy = 0;
+						} else {
+							this.dropping = true;
+						}
+					}
+				}
+
 			};
 			Player.prototype.draw = function() {
 				ctx.fillStyle = 'blue';
 				ctx.fillRect(this.x, this.y, this.w, this.h);
 			};
+
 			Player.prototype.jump = function() {
-				this.vy = -20;
+				if (this.jumping) return;
+				this.vy = -15;
+				this.jumping = true;
 			};
 
 			function Segment(x, y, w, h) {
@@ -133,15 +167,37 @@
 				);
 			}
 
+			var first = map[0];
+			player = new Player(first.x + first.w / 2, first.y - 20, 20, 20);
+
 			requestAnimFrame(tick);
 
 			function tick() {
 				requestAnimFrame(tick);
 				ctx.clearRect(0, 0, g_width, g_height);
+
+				player.update();
+
+				
+
+				// for (var i = 0; i < map.length; i++) {
+				// 	if (player.y >= map[i].y) {
+				// 		if (player.x + player.w >= map[i].x) {
+				// 			player.x = map[i].x - player.w;
+				// 			break;
+				// 		} else if (player.x <= map[i].x + map[i].w) {
+				// 			player.x = map[i].x + map[i].w;
+				// 			break;
+				// 		}
+				// 	}
+				// }
+
 				for (var i = 0; i < map.length; i++) {
 					map[i].update();
 					map[i].draw();
 				}
+
+				player.draw();
 			}
 		});
 		</script>
