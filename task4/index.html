@@ -46,7 +46,10 @@
 					currentShape.moveDown();
 				} else if (key === 38) { // down
 					currentShape.rotate();
+				} else if (key === 32) {
+					socket.emit('solved');
 				}
+				return false;
 			});
 
 			function drawScore() {
