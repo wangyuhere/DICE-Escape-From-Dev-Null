@@ -82,6 +82,12 @@
 				return map[b.i][b.j+1];
 			}
 
+			function switchBlock(b1, b2) {
+				b1.s = S_OFF;
+				b2.s = S_ON;
+				return b2;
+			}
+
 			function S1(b1, b2) {
 			    this.b1 = b1;
 			    this.b2 = b2;
@@ -94,23 +100,52 @@
 				var l1 = getLeft(this.b1);
 				var l2 = getLeft(this.b2);
 
-				if (l1 == null || l2 == null) return;
+				this.s = S_OFF;
 
-				if (l1 != this.b2) {
+				if (l1 == null || l2 == null) {
+					return;
+				}
+
+				if (l2 != this.b1) {
 					if (l1.s == S_ON || l2.s == S_ON) return;
 				} else {
-					if (l2.s == S_ON) return;
+					if (l1.s == S_ON) return;
 				}
+
+				this.b1 = switchBlock(this.b1, l1);
+				this.b2 = switchBlock(this.b2, l2);
+
+				this.s = S_ON;
 
 			}
 
 			S1.prototype.moveRight = function () {
+				var r1 = getRight(this.b1);
+				var r2 = getRight(this.b2);
 
+				this.s = S_OFF;
+
+				if (r1 == null || r2 == null) {
+					return;
+				}
+
+				if (r1 != this.b2) {
+					if (r1.s == S_ON || r2.s == S_ON) return;
+				} else {
+					if (r2.s == S_ON) return;
+				}
+
+				this.b2 = switchBlock(this.b2, r2);
+				this.b1 = switchBlock(this.b1, r1);
+
+				this.s = S_ON;
 			}
 
 			S1.prototype.update = function () {
 			    var s1 = getBelow(this.b1);
 			    var s2 = getBelow(this.b2);
+
+			 		this.s = S_OFF;
 
 			    if (s1 == null || s2 == null) {
 			        return;
@@ -129,6 +164,8 @@
 
 			    this.b1.s = S_ON;
 			    this.b2.s = S_ON;
+
+			 		this.s = S_ON;
 			}
 
 			// create block grid
@@ -140,13 +177,16 @@
 				}
 			}
 
-			var shape1 = new S1(map[4][4],map[4][5]);
+			currentShape = new S1(map[2][2],map[2][3]);
 
 			tick();
 
 			function tick() {
 				ctx.clearRect(0, 0, g_width, g_height);
-				shape1.update();
+				currentShape.update();
+				if (currentShape.s == S_OFF) {
+					currentShape = new S1(map[2][2], map[2][3]);
+				}
 				for (var i = 0; i < map.length; i++) {
 					for (var j = 0; j < map[i].length; j++) {
 						map[i][j].draw();
