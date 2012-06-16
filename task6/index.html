@@ -1,0 +1,152 @@
+<html>
+	<head>
+		<title>Task 3</title>
+		<style type="text/css">
+		body { 
+			text-align: center; }
+		#game { 
+			background-color: #222; 
+			margin-top: 30px; }
+		</style>
+		<script type="text/javascript" src="jquery.min.js"></script>
+		<script type="text/javascript">
+
+		window.requestAnimFrame = window.requestAnimationFrame ||
+			window.webkitRequestAnimationFrame ||
+			window.mozRequestAnimationFrame ||
+			window.oRequestAnimationFrame ||
+			window.msRequestAnimationFrame ||
+			function(callback) {
+				window.setTimeout(callback, 1000 / FPS);
+			};
+
+		$(function() {
+
+			var canvas = $('#game')[0]
+				, ctx = canvas.getContext('2d')
+				, g_width = ctx.canvas.width
+				, g_height = ctx.canvas.height;
+
+			var SEGMENT_WIDTH = 160
+			  , GRAVITY = 3;
+
+			var segments = []
+			  , colors = ['#3cb93f','#d92d1b','#277fd0']
+			  , leftKeyDown = false
+			  , rightKeyDown = false
+			  , player = null;
+
+			function randomInt(low, high) {
+				 return Math.floor(Math.random() * (high - low + 1) + low);
+			}
+
+			// bind left and right keys
+			$('body').bind('keydown', function(e) {
+				var key = e.keyCode;
+				if (key === 37) { // left
+					rightKeyDown = false;
+					leftKeyDown = true;
+				} else if (key === 39) { // right
+					leftKeyDown = false;
+					rightKeyDown = true;
+				}
+				return false;
+			});
+			$('body').bind('keyup', function(e) {
+				var key = e.keyCode;
+				if (key === 37) { // left
+					leftKeyDown = false;
+				} else if (key === 39) { // right
+					rightKeyDown = false;
+				} else if (key === 38) {
+					player.jump();
+				}
+			});
+
+			function Player(x, y, w, h) {
+				this.x = x;
+				this.y = y;
+				this.w = w;
+				this.h = h;
+				this.vy = 0;
+			}
+			Player.prototype.update = function() {
+				
+			};
+			Player.prototype.draw = function() {
+				ctx.fillStyle = 'blue';
+				ctx.fillRect(this.x, this.y, this.w, this.h);
+			};
+			Player.prototype.jump = function() {
+				this.vy = -20;
+			};
+
+			function Segment(x, y, w, h) {
+				this.x = x;
+				this.y = y;
+				this.w = w;
+				this.h = h;
+				this.c = 'rgb(' + randomInt(100,255) + ',' + randomInt(100,255) + ',' + randomInt(100,255) + ')';
+				this.p = { 
+					x: this.x, 
+					y: this.y - randomInt(50,200), 
+					w: this.w, 
+					h: 20
+				};
+				this.platform = randomInt(0,100) % 3 == 0 ? true : false;
+			}
+
+			Segment.prototype.update = function () {
+				if (leftKeyDown) {
+					if (map[map.length - 1].x + SEGMENT_WIDTH <= g_width) {
+						return;
+					}
+					this.x -= 2;
+					this.p.x -= 2;
+				}
+				else if (rightKeyDown) {
+					if (map[0].x === 0) {
+						return;
+					}
+					this.x += 2;
+					this.p.x += 2;
+				}
+			}
+
+			Segment.prototype.draw = function () {
+				ctx.fillStyle = this.c;
+				ctx.fillRect(this.x, this.y, this.w, this.h);
+				if (this.platform) {
+					ctx.fillRect(this.p.x, this.p.y, this.p.w, this.p.h);
+				}
+			}
+
+			// create block grid
+			var map = new Array(10);
+			for (var i = 0; i < map.length; i++) {
+				var height = randomInt(50, 200);
+				map[i] = new Segment(
+					i * SEGMENT_WIDTH, 
+					g_height - height,
+					SEGMENT_WIDTH, 
+					height
+				);
+			}
+
+			requestAnimFrame(tick);
+
+			function tick() {
+				requestAnimFrame(tick);
+				ctx.clearRect(0, 0, g_width, g_height);
+				for (var i = 0; i < map.length; i++) {
+					map[i].update();
+					map[i].draw();
+				}
+			}
+		});
+		</script>
+	</head>
+	<body>
+		<canvas id="game" width="800" height="600"></canvas>
+	</body>
+</html>
