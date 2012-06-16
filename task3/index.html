@@ -22,10 +22,14 @@
 			  , S_ON = 1
 			  , S_OFF = 0;
 
-			var shapes = []
-			  , currentShape = null
+			var currentShape = null
 			  , ticker = null
-			  , score = 0;
+			  , score = 0
+			  , colors = ['red','green','blue'];
+
+			function randomInt(low, high) {
+			   return Math.floor(Math.random() * (high - low + 1) + low);
+			}
 
 			// bind left and right keys
 			$('body').bind('keyup', function(e) {
@@ -40,6 +44,12 @@
 					currentShape.rotateRight();
 				}
 			});
+
+			function drawScore() {
+				ctx.fillStyle = 'lightgreen';
+				ctx.font = '16px Monospace';
+				ctx.fillText(score.toString(), 20, 30);
+			}
 
 			function Block(i, j) {
 			    this.i = i;
@@ -196,7 +206,8 @@
 						map[i][j].draw();
 					}
 				}
-				ticker = setTimeout(tick, 500);
+				drawScore();
+				ticker = setTimeout(tick, 300);
 			}
 
 		});
