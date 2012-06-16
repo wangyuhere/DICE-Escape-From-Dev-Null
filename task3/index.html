@@ -25,7 +25,7 @@
 			var currentShape = null
 				, ticker = null
 				, score = 0
-				, colors = ['red','green','blue'];
+				, colors = ['#3cb93f','#d92d1b','#277fd0'];
 
 			function randomInt(low, high) {
 				 return Math.floor(Math.random() * (high - low + 1) + low);
@@ -108,6 +108,7 @@
 			S.prototype.moveLeft = function () {
 
 				if (this.m[0][1] === 1 && this.m[1][1] === 1 && this.t === 1 && this.j === 0) {
+					this.clear();
 					this.m = [[1, 0], [1, 0]];
 					return;
 				}
@@ -122,6 +123,7 @@
 
 			S.prototype.moveRight = function () {
 				if (this.m[0][0] === 1 && this.m[1][0] === 1 && this.t === 1 && this.j === GRID_COLUMNS - 2) {
+					this.clear();
 					this.m = [[0, 1], [0, 1]];
 					return;
 				}
@@ -215,6 +217,7 @@
 				currentShape.draw();
 				if (currentShape.s == S_OFF) {
 					currentShape = new S(0, 6, randomInt(0, 1));
+					removeFullRows();
 				}
 				for (var i = 0; i < map.length; i++) {
 					for (var j = 0; j < map[i].length; j++) {
@@ -223,6 +226,28 @@
 				}
 				drawScore();
 				ticker = setTimeout(tick, 100);
+			}
+
+			function removeFullRows() {
+				var last = map[map.length - 1], total = 0;
+				for (var i = 0; i < last.length; i++) {
+					if (last[i].s === S_ON) {
+						total += 1;
+					}
+				}
+				if (total === GRID_COLUMNS) {
+					score += 40;
+					for (var i = 0; i < last.length; i++) {
+						last[i].s = S_OFF;
+					}
+					for (var i = map.length - 1; i > 0; i--) {
+						for (var j = 0; j < map[i].length; j++) {
+							if (map[i-1]) {
+								map[i][j].s = map[i-1][j].s;
+							}
+						}
+					}
+				}
 			}
 
 		});
