@@ -1,0 +1,260 @@
+<html>
+	<head>
+		<title>Task 3</title>
+		<style type="text/css">
+		body { 
+			text-align: center; }
+		#game { 
+			background-color: #222; 
+			margin-top: 30px; }
+		</style>
+		<script type="text/javascript" src="socket.io.js"></script>
+		<script type="text/javascript" src="jquery.min.js"></script>
+		<script type="text/javascript">
+		$(function() {
+
+			var canvas = $('#game')[0]
+				, ctx = canvas.getContext('2d')
+				, g_width = ctx.canvas.width
+				, g_height = ctx.canvas.height;
+
+			var GRID_ROWS = 24
+				, GRID_COLUMNS = 16
+				, S_ON = 1
+				, S_OFF = 0;
+
+			var currentShape = null
+				, ticker = null
+				, score = 0
+				, colors = ['#3cb93f','#d92d1b','#277fd0'];
+
+			function randomInt(low, high) {
+				 return Math.floor(Math.random() * (high - low + 1) + low);
+			}
+
+			// bind left and right keys
+			$('body').bind('keyup', function(e) {
+				var key = e.keyCode;
+				if (key === 37) { // left
+					currentShape.moveLeft();
+				} else if (key === 39) { // right
+					currentShape.moveRight();
+				} else if (key === 40) { // up
+					currentShape.moveDown();
+				} else if (key === 38) { // down
+					currentShape.rotate();
+				}
+			});
+
+			function drawScore() {
+				ctx.fillStyle = 'lightgreen';
+				ctx.font = '16px Monospace';
+				ctx.fillText(score.toString(), 20, 30);
+			}
+
+			function Block(i, j) {
+				this.i = i;
+				this.j = j;
+				this.w = 25;
+				this.h = 25;
+				this.x = this.w * this.j;
+				this.y = this.w * this.i;
+				this.s = S_OFF;
+			}
+
+			Block.prototype.update = function () {
+			}
+
+			Block.prototype.draw = function () {
+				switch(this.s) {
+					case S_ON:
+						ctx.fillStyle = '#ff0000';
+						ctx.fillRect(this.x, this.y, this.w, this.h);
+						break;
+					case S_OFF:
+						break;
+				}
+			}
+
+			var rotateM = [[0, -1], [1, 0]];
+
+			function transfer(m) {
+				var a1 = m[1][0];
+				var a2 = m[0][0];
+				var a3 = m[1][1];
+				var a4 = m[0][1];
+
+				return [[a1, a2], [a3, a4]]; 
+			}
+
+			function S (i, j, t) {
+				this.i = i;
+				this.j = j;
+				this.t = t;
+				this.s = S_ON;
+
+				if ( t == 1) {
+					this.m = [[1, 0], [1, 0]];
+				} else {
+					this.m = [[1, 0], [1, 1]];
+				}
+
+			}
+
+			S.prototype.rotate = function () {
+				this.clear();
+				this.m = transfer(this.m);
+			}
+
+			S.prototype.moveLeft = function () {
+
+				if (this.m[0][1] === 1 && this.m[1][1] === 1 && this.t === 1 && this.j === 0) {
+					this.clear();
+					this.m = [[1, 0], [1, 0]];
+					return;
+				}
+
+				if (this.j - 1 < 0) {
+					return;
+				}
+				this.clear();
+				this.j = this.j - 1;
+
+			}
+
+			S.prototype.moveRight = function () {
+				if (this.m[0][0] === 1 && this.m[1][0] === 1 && this.t === 1 && this.j === GRID_COLUMNS - 2) {
+					this.clear();
+					this.m = [[0, 1], [0, 1]];
+					return;
+				}
+
+				if (this.j + 1 > GRID_COLUMNS - 2) {
+					return;
+				}
+
+				this.clear();
+				this.j = this.j + 1;
+			}
+
+			S.prototype.moveDown = function() {
+				for (var i = 0; i < this.m.length; i++) {
+					for (var j = 0; j < this.m[i].length; j++) {
+						if (this.i + 1 > GRID_ROWS - 2) {
+							if (this.i == GRID_ROWS - 2 && this.m[0][0] === 1 && this.m[0][1] === 1 && this.t === 1
+								&& map[this.i+1][this.j].s === S_OFF && map[this.i+1][this.j+1].s === S_OFF) {
+								this.clear();
+								this.m = [[0, 0], [1, 1]];
+							}
+							this.s = S_OFF;
+							return;
+						}
+						if (!this.hasBlock(i+this.i, j+this.j)) {
+							continue;
+						}
+						var below = map[i+1+this.i][j+this.j];
+						if (this.hasBlock(below.i, below.j)) {
+							continue;
+						} else {
+							if (below.s == S_ON) {
+								this.s = S_OFF;
+								return;
+							}
+						}
+					}
+				}
+
+				this.clear();
+				this.i += 1;
+
+			}
+
+			S.prototype.hasBlock = function(i, j) {
+				if ((i === this.i && j === this.j && this.m[0][0] == 1) || 
+					 (i === this.i+1 && j === this.j && this.m[1][0] === 1) ||
+					 (i === this.i && j === this.j+1 && this.m[0][1] === 1) ||
+					 (i === this.i+1 && j === this.j+1 && this.m[1][1] === 1)) {
+					
+					return true;
+				}
+				return false;
+			}
+
+			S.prototype.clear = function () {
+				for (var i = 0; i < this.m.length; i++) {
+					for (var j = 0; j < this.m[i].length; j++) {
+						if (this.hasBlock(i+this.i, j+this.j))
+							map[i+this.i][j+this.j].s = S_OFF;
+					}
+				}
+			}
+
+			S.prototype.draw = function () {
+				for (var i = 0; i < this.m.length; i++) {
+					for (var j = 0; j < this.m[i].length; j++) {
+						if (this.hasBlock(i+this.i, j+this.j))
+							map[i+this.i][j+this.j].s = S_ON;
+					}
+				}
+			}
+
+			// create block grid
+			var map = new Array(GRID_ROWS);
+			for (var i = 0; i < map.length; i++) {
+				map[i] = new Array(GRID_COLUMNS);
+				for (var j = 0; j < map[i].length; j++) {
+					map[i][j] = new Block(i, j);
+				}
+			}
+
+			var currentShape = new S(0, 6, randomInt(0, 1));
+
+			tick();
+			var timer = 0;
+
+			function tick() {
+				ctx.clearRect(0, 0, g_width, g_height);
+				currentShape.moveDown();
+				currentShape.draw();
+				if (currentShape.s == S_OFF) {
+					currentShape = new S(0, 6, randomInt(0, 1));
+					removeFullRows();
+				}
+				for (var i = 0; i < map.length; i++) {
+					for (var j = 0; j < map[i].length; j++) {
+						map[i][j].draw();
+					}
+				}
+				drawScore();
+				ticker = setTimeout(tick, 100);
+			}
+
+			function removeFullRows() {
+				var last = map[map.length - 1], total = 0;
+				for (var i = 0; i < last.length; i++) {
+					if (last[i].s === S_ON) {
+						total += 1;
+					}
+				}
+				if (total === GRID_COLUMNS) {
+					score += 40;
+					for (var i = 0; i < last.length; i++) {
+						last[i].s = S_OFF;
+					}
+					for (var i = map.length - 1; i > 0; i--) {
+						for (var j = 0; j < map[i].length; j++) {
+							if (map[i-1]) {
+								map[i][j].s = map[i-1][j].s;
+							}
+						}
+					}
+				}
+			}
+
+		});
+		</script>
+	</head>
+	<body>
+		<canvas id="game" width="400" height="600"></canvas>
+	</body>
+</html>
