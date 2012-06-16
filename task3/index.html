@@ -19,14 +19,20 @@
 			  , S_ON = 1
 			  , S_OFF = 0;
 
-			var currentShape = null
+			var shapes = []
+			  , currentShape = null
 			  , ticker = null;
 
 			// bind left and right keys
 			$('body').bind('keyup', function(e) {
-				if (e.keyCode === 37) {
+				var key = e.keyCode;
+				if (key === 37) { // left
+					currentShape.moveLeft();
+				} else if (key === 39) { // right
+					currentShape.moveRight();
+				} else if (key === 38) { // up
 					currentShape.rotateLeft();
-				} else if (e.keyCode === 39) {
+				} else if (key === 40) { // down
 					currentShape.rotateRight();
 				}
 			});
@@ -56,7 +62,7 @@
 			}
 
 			function getBelow(b) {
-			    if (b.i + 1 > GRID_ROWS) {
+			    if (b.i + 1 >= GRID_ROWS) {
 			        return null;
 			    }
 			    return map[b.i+1][b.j];
@@ -113,7 +119,7 @@
 						map[i][j].draw();
 					}
 				}
-				ticker = setTimeout(tick, 50);
+				ticker = setTimeout(tick, 500);
 			}
 
 		});
