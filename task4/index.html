@@ -11,6 +11,8 @@
 		<script type="text/javascript" src="socket.io.js"></script>
 		<script type="text/javascript" src="jquery.min.js"></script>
 		<script type="text/javascript">
+		var socket = io.connect('http://localhost:8080');
+		
 		$(function() {
 
 			var canvas = $('#game')[0]
@@ -24,6 +26,7 @@
 				, S_OFF = 0;
 
 			var currentShape = null
+				, extraShape = null
 				, ticker = null
 				, score = 0
 				, colors = ['#3cb93f','#d92d1b','#277fd0'];
@@ -207,6 +210,10 @@
 				}
 			}
 
+			socket.on('generateShape', function (data) {
+				extraShape = new S(0, 6, randomInt(0, 1));
+			});
+
 			var currentShape = new S(0, 6, randomInt(0, 1));
 
 			tick();
@@ -216,6 +223,10 @@
 				ctx.clearRect(0, 0, g_width, g_height);
 				currentShape.moveDown();
 				currentShape.draw();
+				if (extraShape) {
+					extraShape.moveDown();
+					extraShape.draw();
+				}
 				if (currentShape.s == S_OFF) {
 					currentShape = new S(0, 6, randomInt(0, 1));
 					removeFullRows();
@@ -238,6 +249,7 @@
 				}
 				if (total === GRID_COLUMNS) {
 					score += 40;
+					socket.emit('solved');
 					for (var i = 0; i < last.length; i++) {
 						last[i].s = S_OFF;
 					}
