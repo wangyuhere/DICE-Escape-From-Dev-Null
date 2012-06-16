@@ -70,29 +70,26 @@
 			}
 
 			S1.prototype.update = function () {
-				var b1 = this.b1;
-				var b2 = this.b2;
-			    var s1 = getBelow(b1);
-			    var s2 = getBelow(b2);
+			    var s1 = getBelow(this.b1);
+			    var s2 = getBelow(this.b2);
 
 			    if (s1 == null || s2 == null) {
 			        return;
 			    }
-
-			    if (s1 != b2) {
+			    if (s1 != this.b2) {
 			        if (s1.s == S_ON || s2.s == S_ON) return;
 			    } else {
 			        if (s2.s == S_ON) return;
 			    }
 
-			    b1.s = S_OFF;
-			    b2.s = S_OFF;
+			    this.b1.s = S_OFF;
+			    this.b2.s = S_OFF;
 
-			    b1 = s1;
-			    b2 = s2;
+			    this.b1 = s1;
+			    this.b2 = s2;
 
-			    b1.s = S_ON;
-			    b2.s = S_ON;
+			    this.b1.s = S_ON;
+			    this.b2.s = S_ON;
 			}
 
 			// create block grid
