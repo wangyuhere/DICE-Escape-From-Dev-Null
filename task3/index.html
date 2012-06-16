@@ -56,17 +56,50 @@
 			}
 
 			function getBelow(b) {
-			    if (b.i + 1 > GRID_ROWS) {
+			    if (b.i + 1 >= GRID_ROWS) {
 			        return null;
 			    }
 			    return map[b.i+1][b.j];
 			}
 
+			function getLeft(b) {
+				if (b.j - 1 < 0) {
+					return null;
+				}
+				return map[b.i][b.j-1];
+			}
+
+			function getRight(b) {
+				if (b.j + 1 >= GRID_COLUMNS) {
+					return null;
+				}
+				return map[b.i][b.j+1];
+			}
+
 			function S1(b1, b2) {
 			    this.b1 = b1;
 			    this.b2 = b2;
-			 	this.b1.s = S_ON;
-			 	this.b2.s = S_ON;
+			 		this.b1.s = S_ON;
+			 		this.b2.s = S_ON;
+			 		this.s = S_ON;
+			}
+
+			S1.prototype.moveLeft = function () {
+				var l1 = getLeft(this.b1);
+				var l2 = getLeft(this.b2);
+
+				if (l1 == null || l2 == null) return;
+
+				if (l1 != this.b2) {
+					if (l1.s == S_ON || l2.s == S_ON) return;
+				} else {
+					if (l2.s == S_ON) return;
+				}
+
+			}
+
+			S1.prototype.moveRight = function () {
+
 			}
 
 			S1.prototype.update = function () {
