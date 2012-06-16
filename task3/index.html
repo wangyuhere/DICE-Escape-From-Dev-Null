@@ -13,22 +13,22 @@
 		$(function() {
 
 			var canvas = $('#game')[0]
-			  , ctx = canvas.getContext('2d')
-			  , g_width = ctx.canvas.width
-			  , g_height = ctx.canvas.height;
+				, ctx = canvas.getContext('2d')
+				, g_width = ctx.canvas.width
+				, g_height = ctx.canvas.height;
 
 			var GRID_ROWS = 24
-			  , GRID_COLUMNS = 16
-			  , S_ON = 1
-			  , S_OFF = 0;
+				, GRID_COLUMNS = 16
+				, S_ON = 1
+				, S_OFF = 0;
 
 			var currentShape = null
-			  , ticker = null
-			  , score = 0
-			  , colors = ['red','green','blue'];
+				, ticker = null
+				, score = 0
+				, colors = ['red','green','blue'];
 
 			function randomInt(low, high) {
-			   return Math.floor(Math.random() * (high - low + 1) + low);
+				 return Math.floor(Math.random() * (high - low + 1) + low);
 			}
 
 			// bind left and right keys
@@ -52,34 +52,34 @@
 			}
 
 			function Block(i, j) {
-			    this.i = i;
-			    this.j = j;
-			    this.w = 25;
-			    this.h = 25;
-			    this.x = this.w * this.j;
-			    this.y = this.w * this.i;
-			    this.s = S_OFF;
+					this.i = i;
+					this.j = j;
+					this.w = 25;
+					this.h = 25;
+					this.x = this.w * this.j;
+					this.y = this.w * this.i;
+					this.s = S_OFF;
 			}
 
 			Block.prototype.update = function () {
 			}
 
 			Block.prototype.draw = function () {
-			    switch(this.s) {
-			        case S_ON:
-			            ctx.fillStyle = '#ff0000';
-			            ctx.fillRect(this.x, this.y, this.w, this.h);
-			            break;
-			        case S_OFF:
-			            break;
-			    }
+					switch(this.s) {
+							case S_ON:
+									ctx.fillStyle = '#ff0000';
+									ctx.fillRect(this.x, this.y, this.w, this.h);
+									break;
+							case S_OFF:
+									break;
+					}
 			}
 
 			function getBelow(b) {
-			    if (b.i + 1 >= GRID_ROWS) {
-			        return null;
-			    }
-			    return map[b.i+1][b.j];
+					if (b.i + 1 >= GRID_ROWS) {
+							return null;
+					}
+					return map[b.i+1][b.j];
 			}
 
 			function getLeft(b) {
@@ -105,9 +105,9 @@
 			function S1(b1, b2) {
 				this.b1 = b1;
 				this.b2 = b2;
-			 	this.b1.s = S_ON;
-			 	this.b2.s = S_ON;
-			 	this.s = S_ON;
+				this.b1.s = S_ON;
+				this.b2.s = S_ON;
+				this.s = S_ON;
 			}
 
 			S1.prototype.moveLeft = function () {
@@ -165,9 +165,9 @@
 					return;
 				}
 				if (s1 != this.b2) {
-					if (s1.s == S_ON || s2.s == S_ON) return;
+						if (s1.s == S_ON || s2.s == S_ON) return;
 				} else {
-					if (s2.s == S_ON) return;
+						if (s2.s == S_ON) return;
 				}
 
 				this.b1.s = S_OFF;
@@ -194,12 +194,16 @@
 			currentShape = new S1(map[2][2],map[2][3]);
 
 			tick();
+			var timer = 0;
 
 			function tick() {
 				ctx.clearRect(0, 0, g_width, g_height);
-				currentShape.update();
-				if (currentShape.s == S_OFF) {
-					currentShape = new S1(map[2][2], map[2][3]);
+				if (++timer === 10) {
+					currentShape.update();
+					if (currentShape.s == S_OFF) {
+						currentShape = new S1(map[2][2], map[2][3]);
+					}
+					timer = 0;
 				}
 				for (var i = 0; i < map.length; i++) {
 					for (var j = 0; j < map[i].length; j++) {
@@ -207,7 +211,7 @@
 					}
 				}
 				drawScore();
-				ticker = setTimeout(tick, 300);
+				ticker = setTimeout(tick, 50);
 			}
 
 		});
