@@ -138,10 +138,10 @@
 				for (var i = 0; i < this.m.length; i++) {
 					for (var j = 0; j < this.m[i].length; j++) {
 						if (this.i + 1 > GRID_ROWS - 2) {
-							if (this.i == GRID_ROWS - 2 && this.m[0][0] === 1 && this.m[0][1] === 1 && this.t === 1) {
+							if (this.i == GRID_ROWS - 2 && this.m[0][0] === 1 && this.m[0][1] === 1 && this.t === 1
+								&& map[this.i+1][this.j].s === S_OFF && map[this.i+1][this.j+1].s === S_OFF) {
 								this.clear();
 								this.m = [[0, 0], [1, 1]];
-								//return;
 							}
 							this.s = S_OFF;
 							return;
@@ -204,7 +204,7 @@
 				}
 			}
 
-			var currentShape = new S(5, 1, randomInt(0, 1));
+			var currentShape = new S(0, 6, randomInt(0, 1));
 
 			tick();
 			var timer = 0;
@@ -214,7 +214,7 @@
 				currentShape.moveDown();
 				currentShape.draw();
 				if (currentShape.s == S_OFF) {
-					currentShape = new S(5, 1, randomInt(0, 1));
+					currentShape = new S(0, 6, randomInt(0, 1));
 				}
 				for (var i = 0; i < map.length; i++) {
 					for (var j = 0; j < map[i].length; j++) {
